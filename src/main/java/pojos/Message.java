@@ -1,9 +1,18 @@
 package pojos;
 
 public class Message {
+    private String messageId;
     private String roomName;
     private String eventName;
     private String message;
+
+    public String getMessageId() {
+        return messageId;
+    }
+
+    public void setMessageId(String messageId) {
+        this.messageId = messageId;
+    }
 
     public String getRoomName() {
         return roomName;
