@@ -1,3 +1,4 @@
+import apiclient.PublicClient;
 import authentication.SymBotAuth;
 import clients.SymBotClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,12 +23,12 @@ import java.net.URL;
 import java.util.List;
 
 public class BotExample {
+    private PublicClient publicClient;
     private ObjectMapper mapper = new ObjectMapper();
 
     public static void main(String [] args) {
         BasicConfigurator.configure();
         BotExample botExample = new BotExample();
-        BotExample app = new BotExample();
         botExample.startWebServer();
     }
 
@@ -76,6 +77,7 @@ public class BotExample {
                     System.out.println("Call back url " + newProject.getCallbackurl());
 
                     InitializeProjects.getInstance().addProject(newProject);
+                    this.publicClient.createRoom(newProject.getChatroomname());
 
                     response.send("added");
 
@@ -90,6 +92,7 @@ public class BotExample {
         SymBotAuth botAuth = new SymBotAuth(config);
         botAuth.authenticate();
         SymBotClient botClient = SymBotClient.initBot(config, botAuth);
+        this.publicClient = new PublicClient(botClient);
         DatafeedEventsService datafeedEventsService = botClient.getDatafeedEventsService();
         RoomListener roomListenerTest = new RoomListenerTestImpl(botClient);
         datafeedEventsService.addRoomListener(roomListenerTest);
@@ -97,46 +100,5 @@ public class BotExample {
         datafeedEventsService.addIMListener(imListener);
         //createRoom(botClient);
 
-    }
-
-    private void createRoom(SymBotClient botClient){
-
-
-
-        try {
-
-            UserInfo userInfo = botClient.getUsersClient().getUserFromEmail("manuela.caicedo@example.com", true);
-            //get user IM and send message
-            String IMStreamId = botClient.getStreamsClient().getUserIMStreamId(userInfo.getId());
-            OutboundMessage message = new OutboundMessage();
-            message.setMessage("test IM");
-            botClient.getMessagesClient().sendMessage(IMStreamId,message);
-
-            Room room = new Room();
-            room.setName("test room preview");
-            room.setDescription("test");
-            room.setDiscoverable(true);
-            room.setPublic(true);
-            room.setViewHistory(true);
-            RoomInfo roomInfo = null;
-            roomInfo = botClient.getStreamsClient().createRoom(room);
-            botClient.getStreamsClient().addMemberToRoom(roomInfo.getRoomSystemInfo().getId(),userInfo.getId());
-
-            Room newRoomInfo = new Room();
-            newRoomInfo.setName("test generator");
-            botClient.getStreamsClient().updateRoom(roomInfo.getRoomSystemInfo().getId(),newRoomInfo);
-
-            List<RoomMember> members =  botClient.getStreamsClient().getRoomMembers(roomInfo.getRoomSystemInfo().getId());
-
-            botClient.getStreamsClient().promoteUserToOwner(roomInfo.getRoomSystemInfo().getId(), userInfo.getId());
-
-            botClient.getStreamsClient().deactivateRoom(roomInfo.getRoomSystemInfo().getId());
-
-
-        } catch (NoContentException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }
