@@ -64,11 +64,11 @@ public class CreateRoom {
 //        botClient.getPodClient()
 
         //Message client
-        List history = messagesClient.getAllHistoryMsgForRoom("aPpc6mwkOarAEKgLbKtZxH___pxF9yH5dA");
+//        List history = messagesClient.getAllHistoryMsgForRoom("aPpc6mwkOarAEKgLbKtZxH___pxF9yH5dA");
 
 
 
-        System.out.println("he re".trim());
+        System.out.println("he+re+".replace("+",""));
     }
 
     public static void sendMsgToRoom() {

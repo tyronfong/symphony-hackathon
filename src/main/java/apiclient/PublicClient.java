@@ -5,6 +5,7 @@ import model.InboundMessage;
 import model.OutboundMessage;
 import model.Room;
 import model.RoomInfo;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +46,7 @@ public class PublicClient {
         OutboundMessage outboundMessage = new OutboundMessage();
         outboundMessage.setMessage(msg);
         try {
-            return messagesClient.sendMessage(streamId, outboundMessage);
+            return messagesClient.sendMessage(convertStreamId(streamId), outboundMessage);
         } catch (Exception e) {
             logger.error("Failed to send msg.", e);
         }
@@ -55,7 +56,7 @@ public class PublicClient {
 
     public void addMemberToRoom(long userId, String streamId) {
         try {
-            this.streamsClient.addMemberToRoom(streamId, userId);
+            this.streamsClient.addMemberToRoom(convertStreamId(streamId), userId);
         } catch (Exception e) {
             logger.error("Failed to add room member.", e);
         }
@@ -63,7 +64,7 @@ public class PublicClient {
 
     public void removeMemberFromRoom(long userId, String streamId) {
         try {
-            this.streamsClient.removeMemberFromRoom(streamId, userId);
+            this.streamsClient.removeMemberFromRoom(convertStreamId(streamId), userId);
         } catch (Exception e) {
             logger.error("Failed to remove member from room.", e);
         }
@@ -71,7 +72,7 @@ public class PublicClient {
 
     public void deactiveRoom(String streamId) {
         try {
-            this.streamsClient.deactivateRoom(streamId);
+            this.streamsClient.deactivateRoom(convertStreamId(streamId));
         } catch (Exception e) {
             logger.error("Failed to deactive room.", e);
         }
@@ -98,11 +99,19 @@ public class PublicClient {
 
     public List getChatHistory(String streamId) {
         try {
-            return this.messagesClient.getAllHistoryMsgForRoom(streamId);
+            return this.messagesClient.getAllHistoryMsgForRoom(convertStreamId(streamId));
         } catch (Exception e) {
             logger.error("Failed to fetch history from room.", e);
         }
 
         return null;
+    }
+
+    public static String convertStreamId(String streamId) {
+        if (StringUtils.isEmpty(streamId)) {
+            return "";
+        }
+
+        return streamId.replace("/", "_").replace("=", "").replace("+", "-");
     }
 }
