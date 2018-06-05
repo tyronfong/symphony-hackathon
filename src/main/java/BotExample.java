@@ -150,7 +150,7 @@ public class BotExample {
                      smesList.addAll(this.publicClient.searchUsers(sme4.getEmail()));
                  }
 
-                 RandomMessageGenerator.roomSet.put(newProject.getProjectname(), newProject.getProjectname());
+                 RandomMessageGenerator.roomSet.put(newProject.getChatroomname(), newProject.getChatroomname());
 
                  smesList.stream().forEach(userinfo -> {
                      this.publicClient.addMemberToRoom(userinfo.getId(), roomInfo.getRoomSystemInfo().getId());
@@ -177,7 +177,14 @@ public class BotExample {
         datafeedEventsService.addIMListener(imListener);
         //createRoom(botClient);
 
+
+
+
+
+
+
         RandomMessageGenerator.roomSet.put("testroomname1", "testroomname1");
+        RandomMessageGenerator.roomSet.put("testroomname2", "testroomname2");
         RandomMessageGenerator randomMessageGenerator = new RandomMessageGenerator();
         randomMessageGenerator.setPublicClient(publicClient);
 

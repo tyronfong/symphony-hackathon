@@ -21,7 +21,7 @@ public class MessageProssesor implements Runnable{
                 List<RoomInfo> roomList = publicClient.searchRooms(msg.getRoomName());
                 roomList.stream().forEach(roomInfo -> {
                     System.out.println("Proccessing message  " + msg);
-                    this.publicClient.sendMsgToRoom(msg.getMessage(), roomInfo.getRoomSystemInfo().getId());
+                    this.publicClient.sendMsgToRoom(msg.getMessageId() + " - " + msg.getMessage(), roomInfo.getRoomSystemInfo().getId());
                 });
                 //Sleep after process one message
                 Thread.sleep(1000);
