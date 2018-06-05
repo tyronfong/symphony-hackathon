@@ -8,7 +8,10 @@ import listeners.RoomListener;
 import middleware.InitializeProjects;
 import model.*;
 import org.apache.log4j.BasicConfigurator;
+import pojos.Event;
 import pojos.Project;
+import pojos.temppojo.sme;
+import pojos.temppojo.tempProject;
 import ratpack.handling.Context;
 import ratpack.http.MutableHeaders;
 import ratpack.http.Request;
@@ -19,6 +22,8 @@ import services.DatafeedEventsService;
 import javax.ws.rs.core.NoContentException;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class BotExample {
@@ -70,15 +75,45 @@ public class BotExample {
                     String responseJson = data.getText();
                      System.out.println("recieved  " + responseJson);
                     // parse text with whatever you use, e.g. Jackson
-                     Project newProject = mapper.readValue(responseJson, Project.class);
+                     tempProject newProject = mapper.readValue(responseJson, tempProject.class);
+
+                     Project project = new Project();
+                     project.setProjectname(newProject.getProjectname());
+                     project.setCallbackurl(newProject.getCallbackurl());
+                     project.setEmailchathistory(newProject.getEmailchathistory());
+                     project.setChatroomname(newProject.getChatroomname());
+
+                     Event event = new Event();
+                     event.setEventname(newProject.getEvents().getEventname());
+                     event.setDescription(newProject.getEvents().getDescription());
+                     event.setDestroyroomonincidentclose(newProject.getEvents().getDestroyroomonincidentclose());
+
+                     List<sme> smes = new ArrayList<>();
+                     sme sme1 = new sme();
+                     sme sme2 = new sme();
+                     sme sme3 = new sme();
+                     sme sme4 = new sme();
+
+                     sme1.setEmail(newProject.getEvents().getSme1());
+                     sme2.setEmail(newProject.getEvents().getSme2());
+                     sme3.setEmail(newProject.getEvents().getSme3());
+                     sme4.setEmail(newProject.getEvents().getSme4());
+
+                     smes.add(sme1);
+                     smes.add(sme2);
+                     smes.add(sme3);
+                     smes.add(sme4);
+
+                     event.setSmes(smes);
+                     project.setEvents(Arrays.asList(event));
+
                     System.out.println("Project Name " + newProject.getProjectname());
                     System.out.println("Chat room name " + newProject.getChatroomname());
                     System.out.println("Call back url " + newProject.getCallbackurl());
 
-                    InitializeProjects.getInstance().addProject(newProject);
+                    InitializeProjects.getInstance().addProject(project);
 
                     response.send("added");
-
         });
     }
 
