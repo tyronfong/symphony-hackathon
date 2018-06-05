@@ -57,7 +57,7 @@ public class CreateRoom {
 //        streamsClient.deactivateRoom("5aaumz1pzX67Cq3S6wDdU3___pw0RjKadA");
 //        Thread.sleep(10*1000L);
 //        streamsClient.removeMemberFromRoom("5aaumz1pzX67Cq3S6wDdU3___pw0RjKadA", 349026222342684L);
-//        List users = userClient.searchUsers("tyron");
+        List users = userClient.searchUsers("manish sharma");
 //        List rooms = streamsClient.searchRooms("HSBC");
 //        UserInfo userInfo = botClient.getUsersClient().getUserFromId(349026222342686L, false);
 
