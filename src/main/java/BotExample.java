@@ -1,3 +1,4 @@
+import apiclient.PublicClient;
 import authentication.SymBotAuth;
 import clients.SymBotClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,9 +7,12 @@ import configuration.SymConfigLoader;
 import listeners.IMListener;
 import listeners.RoomListener;
 import middleware.InitializeProjects;
+import middleware.MessageProssesor;
+import middleware.RandomMessageGenerator;
 import model.*;
 import org.apache.log4j.BasicConfigurator;
 import pojos.Event;
+import pojos.Message;
 import pojos.Project;
 import pojos.temppojo.sme;
 import pojos.temppojo.tempProject;
@@ -27,12 +31,12 @@ import java.util.Arrays;
 import java.util.List;
 
 public class BotExample {
+    private PublicClient publicClient;
     private ObjectMapper mapper = new ObjectMapper();
 
     public static void main(String [] args) {
         BasicConfigurator.configure();
         BotExample botExample = new BotExample();
-        BotExample app = new BotExample();
         botExample.startWebServer();
     }
 
@@ -58,12 +62,28 @@ public class BotExample {
                                     })
                             .get("allprojects",
                                     ctx -> ctx.render(Jackson.json(Jackson.json(InitializeProjects.getInstance().getProjects()))))
-                            .post("addnewproject", this::handleNewProject)));
+                            .post("addnewproject", this::handleNewProject)
+                            .post("processMessage", this::handleMessage)));
 
         } catch (Exception e) {
             System.out.println("Exception " + e);
             e.printStackTrace();
         }
+    }
+
+    private void handleMessage(Context ctx) {
+        Response response = ctx.getResponse();
+        Request request = ctx.getRequest();
+
+        request.getBody().then(
+                data -> {
+                    String responseJson = data.getText();
+                    System.out.println("recieved  " + responseJson);
+                    // parse text with whatever you use, e.g. Jackson
+                    Message message = mapper.readValue(responseJson, Message.class);
+                    MessageProssesor.addMessage(message);
+                    response.send("Message Processed!!");
+                });
     }
 
     private void handleNewProject(Context ctx) {
@@ -113,7 +133,31 @@ public class BotExample {
 
                     InitializeProjects.getInstance().addProject(project);
 
-                    response.send("added");
+                    RoomInfo roomInfo = this.publicClient.createRoom(newProject.getChatroomname());
+
+                     List<UserInfo> smesList = new ArrayList<>();
+
+                 if(sme1.getEmail() != null && !sme1.getEmail().isEmpty()) {
+                     smesList.addAll(this.publicClient.searchUsers(sme1.getEmail()));
+                 }
+                 if(sme2.getEmail() != null && !sme2.getEmail().isEmpty()) {
+                     smesList.addAll(this.publicClient.searchUsers(sme2.getEmail()));
+                 }
+                 if(sme3.getEmail() != null && !sme3.getEmail().isEmpty()) {
+                     smesList.addAll(this.publicClient.searchUsers(sme3.getEmail()));
+                 }
+                 if(sme4.getEmail() != null && !sme4.getEmail().isEmpty()) {
+                     smesList.addAll(this.publicClient.searchUsers(sme4.getEmail()));
+                 }
+
+                 RandomMessageGenerator.roomSet.put(newProject.getProjectname(), newProject.getProjectname());
+
+                 smesList.stream().forEach(userinfo -> {
+                     this.publicClient.addMemberToRoom(userinfo.getId(), roomInfo.getRoomSystemInfo().getId());
+                 });
+
+                 this.publicClient.sendMsgToRoom("Welcome to " + newProject.getProjectname(), roomInfo.getRoomSystemInfo().getId());
+                response.send("added");
         });
     }
 
@@ -125,6 +169,7 @@ public class BotExample {
         SymBotAuth botAuth = new SymBotAuth(config);
         botAuth.authenticate();
         SymBotClient botClient = SymBotClient.initBot(config, botAuth);
+        this.publicClient = new PublicClient(botClient);
         DatafeedEventsService datafeedEventsService = botClient.getDatafeedEventsService();
         RoomListener roomListenerTest = new RoomListenerTestImpl(botClient);
         datafeedEventsService.addRoomListener(roomListenerTest);
@@ -132,46 +177,17 @@ public class BotExample {
         datafeedEventsService.addIMListener(imListener);
         //createRoom(botClient);
 
-    }
+        RandomMessageGenerator.roomSet.put("testroomname1", "testroomname1");
+        RandomMessageGenerator randomMessageGenerator = new RandomMessageGenerator();
+        randomMessageGenerator.setPublicClient(publicClient);
 
-    private void createRoom(SymBotClient botClient){
+        MessageProssesor messageProssesor = new MessageProssesor();
+        messageProssesor.setPublicClient(publicClient);
 
+        Thread thread = new Thread(randomMessageGenerator);
+        thread.start();
 
-
-        try {
-
-            UserInfo userInfo = botClient.getUsersClient().getUserFromEmail("manuela.caicedo@example.com", true);
-            //get user IM and send message
-            String IMStreamId = botClient.getStreamsClient().getUserIMStreamId(userInfo.getId());
-            OutboundMessage message = new OutboundMessage();
-            message.setMessage("test IM");
-            botClient.getMessagesClient().sendMessage(IMStreamId,message);
-
-            Room room = new Room();
-            room.setName("test room preview");
-            room.setDescription("test");
-            room.setDiscoverable(true);
-            room.setPublic(true);
-            room.setViewHistory(true);
-            RoomInfo roomInfo = null;
-            roomInfo = botClient.getStreamsClient().createRoom(room);
-            botClient.getStreamsClient().addMemberToRoom(roomInfo.getRoomSystemInfo().getId(),userInfo.getId());
-
-            Room newRoomInfo = new Room();
-            newRoomInfo.setName("test generator");
-            botClient.getStreamsClient().updateRoom(roomInfo.getRoomSystemInfo().getId(),newRoomInfo);
-
-            List<RoomMember> members =  botClient.getStreamsClient().getRoomMembers(roomInfo.getRoomSystemInfo().getId());
-
-            botClient.getStreamsClient().promoteUserToOwner(roomInfo.getRoomSystemInfo().getId(), userInfo.getId());
-
-            botClient.getStreamsClient().deactivateRoom(roomInfo.getRoomSystemInfo().getId());
-
-
-        } catch (NoContentException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        Thread thread1 = new Thread(messageProssesor);
+        thread1.start();
     }
 }
