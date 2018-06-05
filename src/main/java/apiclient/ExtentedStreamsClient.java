@@ -24,7 +24,7 @@ public class ExtentedStreamsClient extends StreamsClient {
         this.botClient = client;
     }
 
-    public List searchRooms(String query) throws Exception {
+    public List<RoomInfo> searchRooms(String query) throws Exception {
         List<RoomInfo> infoList = new ArrayList();
         if (query != null) {
             if (query.isEmpty()) {

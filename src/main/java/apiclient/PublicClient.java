@@ -1,10 +1,7 @@
 package apiclient;
 
 import clients.ISymClient;
-import model.InboundMessage;
-import model.OutboundMessage;
-import model.Room;
-import model.RoomInfo;
+import model.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,7 +75,7 @@ public class PublicClient {
         }
     }
 
-    public List searchUsers(String query) {
+    public List<UserInfo> searchUsers(String query) {
         try {
             return this.userClient.searchUsers(query);
         } catch (Exception e) {
@@ -87,7 +84,7 @@ public class PublicClient {
         return null;
     }
 
-    public List searchRooms(String query) {
+    public List<RoomInfo> searchRooms(String query) {
         try {
             return this.streamsClient.searchRooms(query);
         } catch (Exception e) {
