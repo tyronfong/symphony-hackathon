@@ -17,7 +17,7 @@ import java.net.URISyntaxException;
 
 public class JiraClient {
     private static JiraClient instance = null;
-    URI jiraServerUri = new URI("http://192.168.20.144:32768");
+    URI jiraServerUri = new URI("http://192.168.43.57:32768");
     final AsynchronousJiraRestClientFactory factory = new AsynchronousJiraRestClientFactory();
     final JiraRestClient restClient = factory.createWithBasicHttpAuthentication(jiraServerUri, "botuser", "botuser");
 
@@ -37,8 +37,8 @@ public class JiraClient {
 
     public static void main(String[] args) throws Exception {
 //        BasicIssue issue = JiraClient.getInstance().createJira("Test");
-        JiraClient.getInstance().closeJira("FXOEV-4");
-
+        JiraClient.getInstance().closeJira("FXOEV-5");
+        System.out.printf("");
     }
 
     public BasicIssue createJira(String summary) {
@@ -58,6 +58,5 @@ public class JiraClient {
         Issue issue = restClient.getIssueClient().getIssue(jiraId).claim();
         Iterable it = restClient.getIssueClient().getTransitions(issue).claim();
         restClient.getIssueClient().transition(issue, new TransitionInput(41)).claim();
-        System.out.printf("");
     }
 }
